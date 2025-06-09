@@ -1,25 +1,43 @@
 import express from "express";
-import dotenv from 'dotenv';
-import connectdb from "./config/db";
+import dotenv from "dotenv";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import connectdb from "./config/db"; // Make sure this exists
+import authRoutes from "./routes/userRoutes"; // Adjust path as needed
+import { loginUser } from "./controllers/userController";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Middleware
+app.use(cors({
+  origin: "http://localhost:3000", // Adjust to match your frontend origin
+  credentials: true,
+}));
 app.use(express.json());
+app.use(cookieParser());
 
-app.get('/', (_req, res) => {
-    console.log('GET / route hit');
-    res.send('welcome to backend server');
+// Routes
+app.post("/login", loginUser);
+
+// Root route
+app.get("/", (_req, res) => {
+  res.send("Welcome to the backend server!");
 });
 
+// Start server
 const startServer = async () => {
-  await connectdb();
-
-  app.listen(port, () => {
-    console.log(`server running on port ${port}`);
-  });
+  try {
+    await connectdb(); // Ensure MongoDB is connected before starting server
+    app.listen(port, () => {
+      console.log(`🚀 Server is running on http://localhost:${port}`);
+    });
+  } catch (error) {
+    console.error("❌ Error starting server:", error);
+    process.exit(1);
+  }
 };
 
 startServer();
