@@ -4,7 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectdb from "./config/db"; // Make sure this exists
 import authRoutes from "./routes/userRoutes"; // Adjust path as needed
-import { loginUser } from "./controllers/userController";
+import { loginUser, registerUser } from "./controllers/userController";
 
 dotenv.config();
 
@@ -21,6 +21,7 @@ app.use(cookieParser());
 
 // Routes
 app.post("/login", loginUser);
+app.post("/register", registerUser)
 
 // Root route
 app.get("/", (_req, res) => {

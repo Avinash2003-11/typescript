@@ -1,15 +1,17 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import User from '../models/userSchema';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { sendTokenAsCookie } from '../middleware/authentication'; // Reuse your utility
 
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
 
   try {
+    if (!email || !password) {
+      res.status(400).json({ message: 'Email and password are required' });
+      return;
+    }
+
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       res.status(400).json({ message: 'Invalid email or password' });
@@ -22,20 +24,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      throw new Error("JWT_SECRET is not defined");
-    }
-
-    const token = jwt.sign({ id: user._id }, secret, { expiresIn: '1h' });
-
-    // Set token in secure cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 1000, // 1 hour
-    });
+    sendTokenAsCookie(res, { id: user._id });
 
     res.status(200).json({
       message: "Login successful",
@@ -43,6 +32,53 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         id: user._id,
         name: user.name,
         email: user.email,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: (err as Error).message });
+  }
+};
+
+export const registerUser = async (req: Request, res: Response): Promise<void> => {
+  const { name, email, password, confirmpassword } = req.body;
+
+  try {
+    // Basic validation
+    if (!name || !email || !password || !confirmpassword) {
+      res.status(400).json({ message: 'All fields are required' });
+      return;
+    }
+
+    if (password !== confirmpassword) {
+      res.status(400).json({ message: 'Passwords do not match' });
+      return;
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      res.status(400).json({ message: 'User already exists with this email' });
+      return;
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newUser = new User({
+      name,
+      email: email.toLowerCase(),
+      password: hashedPassword,
+    });
+
+    await newUser.save();
+
+    sendTokenAsCookie(res, { id: newUser._id });
+
+    res.status(201).json({
+      message: "Registration successful",
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
       },
     });
   } catch (err) {
