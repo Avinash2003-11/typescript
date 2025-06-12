@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import User from '../models/userSchema';
-import { sendTokenAsCookie } from '../middleware/authentication'; // Reuse your utility
+import { sendTokenAsCookie } from '../middleware/authentication'; 
+import { hash } from '../utils/hashpassword';
+import { compare } from '../utils/hashpassword';
 
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
@@ -18,7 +20,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await compare(password, user.password);
     if (!isMatch) {
       res.status(400).json({ message: 'Invalid email or password' });
       return;
@@ -43,7 +45,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
   const { name, email, password, confirmpassword } = req.body;
 
   try {
-    // Basic validation
+    
     if (!name || !email || !password || !confirmpassword) {
       res.status(400).json({ message: 'All fields are required' });
       return;
@@ -60,8 +62,8 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    
+    const hashedPassword = await hash(password);
 
     const newUser = new User({
       name,
@@ -71,7 +73,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
 
     await newUser.save();
 
-    sendTokenAsCookie(res, { id: newUser._id });
+   
 
     res.status(201).json({
       message: "Registration successful",
