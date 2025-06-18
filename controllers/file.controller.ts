@@ -1,25 +1,18 @@
+// src/controllers/uploadController.ts
 import { Request, Response } from "express";
-import { s3UploadFile } from "../utils/s3client";
-import FileModel from "../models/file";
+import { uploadToS3 } from "../utils/s3upload";
+export const uploadFileController = async (req: Request, res: Response) => {
+  const file = req.file;
+  if (!file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
 
-interface MulterRequest extends Request {
-  file: Express.Multer.File;
-}
-
-export const uploadFile = async (req: MulterRequest, res: Response) => {
   try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-
-    const s3Result = await s3UploadFile(req.file);
-
-    const savedFile = await FileModel.create({
-      originalName: req.file.originalname,
-      s3Url: s3Result.Location,
-    });
-
-    return res.status(200).json(savedFile);
+    const result = await uploadToS3(file);
+    return res.status(200).json({ success: true, fileUrl: result.location });
   } catch (error) {
-    console.error("Upload error:", error);
-    return res.status(500).json({ error: "Failed to upload file" });
+    console.error(error);
+    return res.status(500).json({ error: "Upload failed" });
   }
 };
+

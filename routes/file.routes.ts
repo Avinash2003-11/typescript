@@ -1,14 +1,11 @@
+// src/routes/uploadRoutes.ts
 import express from "express";
 import multer from "multer";
-import { uploadFile } from "../controllers/file.controller";
+import { uploadFileController } from "../controllers/file.controller";
 
 const router = express.Router();
+const upload = multer(); // In-memory storage
 
-// Use memory storage for direct upload to S3
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-// POST /api/files/upload
-router.post("/upload", upload.single("file"), uploadFile);
+router.post("/upload", upload.single("file"), uploadFileController);
 
 export default router;
