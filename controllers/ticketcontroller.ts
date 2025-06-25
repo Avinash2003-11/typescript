@@ -21,7 +21,7 @@ export const ticket = async (req: Request, res: Response) => {
     const mailoptions = {
         from : process.env.EMAIL_USER,
         to: email,
-        subject: 'ticket confirmation',
+        subject: 'ticket raising confirmation',
         text: `Hi ${name},\n\nYour ticket has been created successfully.\n\nDetails:\n- Problem: ${problem}\n- Ticket ID: ${newticket._id}\n\nWe will get back to you soon.`
     };
     await transporter.sendMail(mailoptions)
