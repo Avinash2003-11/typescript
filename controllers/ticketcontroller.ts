@@ -44,3 +44,28 @@ export const gettickets = async(req:Request, res:Response) =>{
         res.status(400).json({message:"failed to retrive tickets"})
     }
 }
+
+export const updateTicket = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name, employeeId, problem } = req.body;
+
+  try {
+    const updatedTicket = await ticketmodel.findByIdAndUpdate(
+      id,
+      { name, employeeId, problem },
+      { new: true, runValidators: true } 
+    );
+
+    if (!updatedTicket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    res.status(200).json({
+      message: "Ticket updated successfully",
+      ticket: updatedTicket,
+    });
+  } catch (error) {
+    console.error("Error updating ticket:", error);
+    res.status(500).json({ message: "Failed to update ticket" });
+  }
+};

@@ -8,6 +8,7 @@ import { uploadFile } from "./controllers/file.controller"
 import fileroutes from "./routes/file.routes"
 import { loginUser, registerUser } from "./controllers/userController";
 import ticketroute from './routes/ticketroute'
+import { updateTicket } from "./controllers/ticketcontroller";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use("/api/files", fileroutes);
 app.post("/upload", uploadFile)
 app.post('/ticket', ticketroute)
 app.get("/tickets", ticketroute)
+app.put("/tickets/:id", ticketroute)
 // Root route
 app.get("/", (_req, res) => {
   res.send("Welcome to the backend server!");
