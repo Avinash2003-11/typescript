@@ -4,9 +4,10 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectdb from "./config/db"; // Make sure this exists
 import authRoutes from "./routes/userRoutes"; // Adjust path as needed
-import { uploadFileController } from "./controllers/file.controller"
+import { uploadFile } from "./controllers/file.controller"
 import fileroutes from "./routes/file.routes"
 import { loginUser, registerUser } from "./controllers/userController";
+import ticketroute from './routes/ticketroute'
 
 dotenv.config();
 
@@ -24,7 +25,10 @@ app.use(cookieParser());
 // Routes
 app.post("/login", loginUser);
 app.post("/register", registerUser)
-app.use('/api/files', uploadFileController)
+app.use("/api/files", fileroutes);
+app.post("/upload", uploadFile)
+app.post('/ticket', ticketroute)
+app.get("/tickets", ticketroute)
 // Root route
 app.get("/", (_req, res) => {
   res.send("Welcome to the backend server!");
