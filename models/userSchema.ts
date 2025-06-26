@@ -4,6 +4,7 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
+  department: String;
   createdAt: Date;
 }
 
@@ -30,6 +31,12 @@ const userSchema = new Schema<IUser>(
       minlength: [6, "Password must be at least 6 characters"],
       select: false, // important for security: hide by default
     },
+    department: {
+    type: String,
+   required: [true, "Department is required"],
+    trim: true,
+},
+
     createdAt: {
       type: Date,
       default: Date.now,
