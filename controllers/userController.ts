@@ -136,6 +136,7 @@ export const updateUserByName = async (req: Request, res: Response): Promise<voi
     if (profile) {
       if (email) profile.email = email.toLowerCase();
       if (department) profile.department = department;
+      profile.name = user.name
       await profile.save();
     }
 
