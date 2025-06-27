@@ -34,6 +34,9 @@ export const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
   try {
     const decoded = jwt.verify(token, jwt_secret) as JwtPayload;
     (req as any).user = decoded; // ✅ Quick workaround for testing
+    if (decoded.email !== "admin@gmail.com") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
     next();
   } catch (error) {
     return res.status(401).json({ message: "Invalid or expired token" });

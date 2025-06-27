@@ -31,60 +31,6 @@ export const applyLeave = async (req: Request, res: Response) => {
   }
 };
 
-export const getUserLeaves = async (req: Request, res: Response) => {
-  try {
-    const leaves = await LeaveRequest.find({ userId: req.params.userId });
-    res.status(200).json(leaves);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching user leaves', error });
-  }
-};
-
-export const getAllLeaves = async (req: Request, res: Response) => {
-  try {
-    const leaves = await LeaveRequest.find().populate('userId', 'name email');
-    res.status(200).json(leaves);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching all leaves', error });
-  }
-};
-
- export const updateLeaveStatusByEmail = async (req: Request, res: Response) => {
-  try {
-    const { email, status,remarks } = req.body;
-
-    // 1. Find the user
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // 2. Find their most recent leave request (or customize this logic)
-    const leave = await LeaveRequest.findOne({ userId: user._id }).sort({ createdAt: -1 });
-
-    if (!leave) {
-      return res.status(404).json({ message: 'No leave request found for this user' });
-    }
-
-    // 3. Update the leave status
-    leave.status = status;
-    leave.remarks = remarks;
-    await leave.save();
-
-    res.status(200).json({ message: 'Leave status updated successfully', leave });
-
-    const mailsend = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "updated leave details",
-      text: `your leave status have been updated by admin. status: ${status}, remarks: ${remarks}`
-    }
-    await transporter.sendMail(mailsend)
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error updating leave status', error });
-  }
-};
 
   export const deleteLeaveByEmail = async (req: Request, res: Response) => {
   try {
